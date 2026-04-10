@@ -603,4 +603,4 @@
   module.init = init;
   module.destroy = destroy;
 
-})({}, MediaLab, document, window);
+})(window.__MediaLabModule, window.MediaLab, document, window);

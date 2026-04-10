@@ -86,40 +86,38 @@
       }
 
       try {
-        // 动态加载 JS 文件
-        const response = await fetch(modulePath);
-        if (!response.ok) {
-          throw new Error(`模块加载失败: ${modulePath}`);
-        }
-
-        const moduleCode = await response.text();
-
-        // 创建模块执行上下文
-        const module = {
+        // 创建模块上下文对象
+        const mod = {
           id: this.extractModuleId(modulePath),
           init: null,
           destroy: null
         };
 
-        // 执行模块代码
-        const moduleFunction = new Function(
-          'module',
-          'MediaLab',
-          'document',
-          'window',
-          moduleCode + '\n//# sourceURL=' + modulePath
-        );
+        // 通过全局临时变量传递 module 对象给模块 IIFE
+        window.__MediaLabModule = mod;
 
-        moduleFunction(module, MediaLab, document, window);
+        // 动态创建 script 标签加载模块
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = modulePath;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error(`模块加载失败: ${modulePath}`));
+          document.head.appendChild(script);
+          // 加载完后移除 script 标签，代码已在 IIFE 中执行完毕
+          script.onload = () => {
+            document.head.removeChild(script);
+            resolve();
+          };
+        });
 
-        this.loadedModules.set(modulePath, module);
+        this.loadedModules.set(modulePath, mod);
 
         // 如果模块有 init 方法，调用它
-        if (typeof module.init === 'function') {
-          await module.init();
+        if (typeof mod.init === 'function') {
+          await mod.init();
         }
 
-        return module;
+        return mod;
       } catch (error) {
         console.error('模块加载失败:', error);
         MediaLab.toast(`模块加载失败: ${error.message}`, 'error');
