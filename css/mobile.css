@@ -4,11 +4,6 @@
    与桌面端布局完全独立：桌面骨架 #app 整体隐藏，由 js/mobile-app.js 自建外壳。
    ============================================================ */
 
-/* 弹窗内的长按保存提示只在移动端展示 */
-.modal-hint {
-  display: none;
-}
-
 html.ml-mobile {
   --m-bg: #0d0f16;
   --m-surface: #171a24;
@@ -614,105 +609,9 @@ html.ml-mobile .video-info-bar {
   padding-top: 10px;
 }
 
-/* ===== 已提取的帧：横向滑动缩略图 ===== */
+/* ===== 已提取的帧：手机上提取即保存，不展示帧列表（帧列表与预览弹窗是桌面端交互） ===== */
 html.ml-mobile .frames-panel {
-  flex: none;
-  max-height: none;
-  background: transparent;
-  border-top: 1px solid var(--m-border);
-  padding-bottom: calc(var(--m-safe-bottom) + 12px);
-}
-
-html.ml-mobile .frames-header {
-  position: static;
-  padding: 12px 16px 8px;
-  background: transparent;
-}
-
-html.ml-mobile .frames-header h3 {
-  font-size: 14px;
-}
-
-html.ml-mobile .frames-grid {
-  gap: 10px;
-  padding: 0 16px 8px;
-  scroll-snap-type: x proximity;
-  scroll-padding: 16px;
-}
-
-html.ml-mobile .frame-card,
-html.ml-mobile .frame-card:hover {
-  width: 128px;
-  border-radius: 12px;
-  border-color: var(--border-color);
-  transform: none;
-  scroll-snap-align: start;
-}
-
-html.ml-mobile .frame-card:active {
-  transform: scale(0.97);
-}
-
-html.ml-mobile .frame-card img {
-  width: 128px;
-  height: 76px;
-}
-
-/* ===== 帧预览：底部抽屉 ===== */
-html.ml-mobile .modal {
-  align-items: flex-end;
-}
-
-html.ml-mobile .modal-content {
-  width: 100%;
-  max-width: 100%;
-  max-height: 92dvh;
-  border-radius: 20px 20px 0 0;
-  border-bottom: none;
-  padding-bottom: var(--m-safe-bottom);
-}
-
-html.ml-mobile .modal-header {
-  padding: 14px 16px 12px;
-}
-
-html.ml-mobile .modal-header span {
-  font-size: 15px;
-}
-
-html.ml-mobile .modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 16px 8px;
-}
-
-html.ml-mobile .modal-body img {
-  width: 100%;
-  max-height: 60dvh;
-  object-fit: contain;
-  background: #000;
-  -webkit-touch-callout: default;
-  user-select: auto;
-}
-
-html.ml-mobile .modal-hint {
-  display: block;
-  font-size: 12px;
-  color: var(--m-text-3);
-  text-align: center;
-}
-
-html.ml-mobile .modal-footer {
-  padding: 8px 16px 16px;
-}
-
-html.ml-mobile .modal-footer .btn {
-  width: 100%;
-  justify-content: center;
-  min-height: 50px;
-  font-size: 16px;
-  font-weight: 600;
+  display: none !important;
 }
 
 /* ===== Toast：顶部居中，避开底部操作区 ===== */

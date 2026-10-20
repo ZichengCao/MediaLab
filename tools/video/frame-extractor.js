@@ -268,7 +268,6 @@
         </div>
         <div class="modal-body">
           <img id="modal-image" src="" alt="帧预览">
-          <p class="modal-hint">长按图片也可以直接保存到相册</p>
         </div>
         <div class="modal-footer">
           <button id="btn-download-frame" class="btn btn-primary">
@@ -277,7 +276,7 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            ${IS_MOBILE ? '保存图片' : '下载图片'}
+            下载图片
           </button>
         </div>
       </div>
@@ -492,6 +491,13 @@
     elements.ctx.drawImage(elements.video, 0, 0, elements.canvas.width, elements.canvas.height);
 
     const dataUrl = elements.canvas.toDataURL('image/png');
+
+    // 手机上没有帧列表，提取后一步直接保存
+    if (IS_MOBILE) {
+      saveFrameDirectly(dataUrl);
+      return;
+    }
+
     const time = elements.video.currentTime;
     const index = state.extractedFrames.length + 1;
 
@@ -500,6 +506,25 @@
 
     elements.framesPanel.classList.remove('hidden');
     MediaLab.toast(`已提取第 ${index} 帧`);
+  }
+
+  /**
+   * 手机上提取即保存：blob URL + download 属性，安卓直接落盘，iOS 弹系统下载确认
+   */
+  function saveFrameDirectly(dataUrl) {
+    const t = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const fileName = `frame_${t.getFullYear()}${pad(t.getMonth() + 1)}${pad(t.getDate())}_${pad(t.getHours())}${pad(t.getMinutes())}${pad(t.getSeconds())}.png`;
+
+    const url = URL.createObjectURL(dataUrlToBlob(dataUrl));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    MediaLab.toast('已提取，开始保存');
   }
 
   function addFrameCard(dataUrl, time, index) {
@@ -540,28 +565,9 @@
 
   function downloadFrame() {
     if (!state.currentModalFrame) return;
-    const dataUrl = state.currentModalFrame;
-    const fileName = `frame_${Date.now()}.png`;
-
-    if (IS_MOBILE && typeof navigator.share === 'function') {
-      // 手机浏览器大多不处理 download 属性，改走系统分享面板存入相册；
-      // share 必须在点击事件的同步调用链里发起，所以 DataURL 转 Blob 不能用异步 fetch
-      const file = new File([dataUrlToBlob(dataUrl)], fileName, { type: 'image/png' });
-      if (!navigator.canShare || navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: '视频帧' }).catch(error => {
-          if (error.name !== 'AbortError') fallbackDownload(dataUrl, fileName);
-        });
-        return;
-      }
-    }
-
-    fallbackDownload(dataUrl, fileName);
-  }
-
-  function fallbackDownload(dataUrl, fileName) {
     const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = fileName;
+    a.href = state.currentModalFrame;
+    a.download = `frame_${Date.now()}.png`;
     a.click();
     MediaLab.toast('已开始下载');
   }
