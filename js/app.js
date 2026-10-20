@@ -298,16 +298,19 @@
   }
 
   // ===== 初始化应用 =====
-  const app = new AppManager();
+  // 移动端界面由 mobile-app.js 接管，这里只保留全局工具函数
+  if (!document.documentElement.classList.contains('ml-mobile')) {
+    const app = new AppManager();
 
-  // 等待 DOM 加载完成后初始化
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app.init());
-  } else {
-    app.init();
+    // 等待 DOM 加载完成后初始化
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => app.init());
+    } else {
+      app.init();
+    }
+
+    // 导出应用实例
+    window.MediaLab.App = app;
   }
-
-  // 导出应用实例
-  window.MediaLab.App = app;
 
 })();

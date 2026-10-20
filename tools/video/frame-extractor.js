@@ -6,6 +6,8 @@
 (function (module, MediaLab, document, window) {
   'use strict';
 
+  const IS_MOBILE = document.documentElement.classList.contains('ml-mobile');
+
   let isInitialized = false;
   let elements = {};
   let state = {
@@ -73,7 +75,7 @@
       <!-- 视频工作区 -->
       <div id="video-workspace" class="workspace hidden">
         <div class="video-container">
-          <video id="video-player" preload="auto"></video>
+          <video id="video-player" preload="auto" playsinline webkit-playsinline></video>
           <canvas id="video-canvas" hidden></canvas>
         </div>
 
@@ -184,6 +186,14 @@
     // 缓存 DOM 元素引用
     cacheElements();
 
+    if (IS_MOBILE) {
+      elements.placeholder.querySelector('p').textContent = '点击选择视频文件';
+      const sub = document.createElement('p');
+      sub.className = 'placeholder-sub';
+      sub.textContent = '支持相册中的视频，所有处理都在手机本地完成';
+      elements.placeholder.appendChild(sub);
+    }
+
     // 创建预览弹窗（复用全局弹窗）
     createModal();
   }
@@ -258,6 +268,7 @@
         </div>
         <div class="modal-body">
           <img id="modal-image" src="" alt="帧预览">
+          <p class="modal-hint">长按图片也可以直接保存到相册</p>
         </div>
         <div class="modal-footer">
           <button id="btn-download-frame" class="btn btn-primary">
@@ -266,7 +277,7 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            下载图片
+            ${IS_MOBILE ? '保存图片' : '下载图片'}
           </button>
         </div>
       </div>
@@ -288,6 +299,9 @@
     // 打开视频文件
     elements.btnOpen.addEventListener('click', () => elements.fileInput.click());
     elements.fileInput.addEventListener('change', handleFileSelect);
+    if (IS_MOBILE) {
+      elements.placeholder.addEventListener('click', () => elements.fileInput.click());
+    }
 
     // 拖拽支持
     document.addEventListener('dragover', handleDragOver);
@@ -301,21 +315,25 @@
     elements.video.addEventListener('ended', handleEnded);
     elements.video.addEventListener('timeupdate', handleTimeUpdate);
 
-    // 进度条交互
+    // 进度条交互：Pointer Events 同时覆盖鼠标与触屏，捕获指针后手指滑出进度条也能继续拖
     let dragging = false;
-    elements.progressBar.addEventListener('mousedown', e => {
+    elements.progressBar.addEventListener('pointerdown', e => {
       if (!state.videoLoaded) return;
+      e.preventDefault();
       dragging = true;
-      seekToMouse(e);
+      elements.progressBar.setPointerCapture(e.pointerId);
+      seekToPointer(e);
     });
 
-    document.addEventListener('mousemove', e => {
-      if (dragging) seekToMouse(e);
+    elements.progressBar.addEventListener('pointermove', e => {
+      if (dragging) seekToPointer(e);
     });
 
-    document.addEventListener('mouseup', () => {
+    const stopDragging = () => {
       dragging = false;
-    });
+    };
+    elements.progressBar.addEventListener('pointerup', stopDragging);
+    elements.progressBar.addEventListener('pointercancel', stopDragging);
 
     // 帧操作
     elements.btnPrevFrame.addEventListener('click', () => stepFrame(-1));
@@ -427,10 +445,11 @@
   function updateProgress() {
     const pct = (elements.video.currentTime / elements.video.duration) * 100 || 0;
     elements.progressFill.style.width = pct + '%';
+    elements.progressHandle.style.left = pct + '%';
     elements.timeCurrent.textContent = MediaLab.formatTime(elements.video.currentTime);
   }
 
-  function seekToMouse(e) {
+  function seekToPointer(e) {
     const rect = elements.progressBar.getBoundingClientRect();
     let ratio = (e.clientX - rect.left) / rect.width;
     ratio = Math.max(0, Math.min(1, ratio));
@@ -521,11 +540,41 @@
 
   function downloadFrame() {
     if (!state.currentModalFrame) return;
+    const dataUrl = state.currentModalFrame;
+    const fileName = `frame_${Date.now()}.png`;
+
+    if (IS_MOBILE && typeof navigator.share === 'function') {
+      // 手机浏览器大多不处理 download 属性，改走系统分享面板存入相册；
+      // share 必须在点击事件的同步调用链里发起，所以 DataURL 转 Blob 不能用异步 fetch
+      const file = new File([dataUrlToBlob(dataUrl)], fileName, { type: 'image/png' });
+      if (!navigator.canShare || navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: '视频帧' }).catch(error => {
+          if (error.name !== 'AbortError') fallbackDownload(dataUrl, fileName);
+        });
+        return;
+      }
+    }
+
+    fallbackDownload(dataUrl, fileName);
+  }
+
+  function fallbackDownload(dataUrl, fileName) {
     const a = document.createElement('a');
-    a.href = state.currentModalFrame;
-    a.download = `frame_${Date.now()}.png`;
+    a.href = dataUrl;
+    a.download = fileName;
     a.click();
     MediaLab.toast('已开始下载');
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const [header, base64] = dataUrl.split(',');
+    const mime = (header.match(/data:([^;]+)/) || [])[1] || 'image/png';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
   }
 
   // ===== 键盘快捷键 =====

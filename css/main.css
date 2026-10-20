@@ -444,6 +444,7 @@ body {
   opacity: 0;
   transition: all 0.15s;
   margin-top: -6px;
+  margin-left: -6px;
   pointer-events: none;
   box-shadow: 0 0 6px rgba(108, 123, 240, 0.4);
 }

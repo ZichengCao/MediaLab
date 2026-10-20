@@ -1,10 +1,11 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "menu": [
     {
       "id": "video",
       "label": "视频工具",
       "icon": "video",
+      "color": "#6c7bf0",
       "children": [
         {
           "id": "video-frame-extractor",
@@ -18,7 +19,7 @@
           "label": "格式转换",
           "icon": "refresh",
           "module": "tools/video/converter.js",
-          "description": "视频格式转换（开发中）",
+          "description": "视频格式转换",
           "disabled": true
         }
       ]
@@ -27,13 +28,14 @@
       "id": "image",
       "label": "图片工具",
       "icon": "image",
+      "color": "#f06cb8",
       "children": [
         {
           "id": "image-editor",
           "label": "图片编辑",
           "icon": "edit",
           "module": "tools/image/editor.js",
-          "description": "基础图片编辑工具（开发中）",
+          "description": "基础图片编辑工具",
           "disabled": true
         },
         {
@@ -41,7 +43,7 @@
           "label": "格式转换",
           "icon": "refresh",
           "module": "tools/image/converter.js",
-          "description": "图片格式转换（开发中）",
+          "description": "图片格式转换",
           "disabled": true
         }
       ]
@@ -50,13 +52,14 @@
       "id": "audio",
       "label": "音频工具",
       "icon": "music",
+      "color": "#4ecb8d",
       "children": [
         {
           "id": "audio-editor",
           "label": "音频编辑",
           "icon": "edit",
           "module": "tools/audio/editor.js",
-          "description": "基础音频编辑工具（开发中）",
+          "description": "基础音频编辑工具",
           "disabled": true
         }
       ]
@@ -65,13 +68,14 @@
       "id": "document",
       "label": "文档工具",
       "icon": "file",
+      "color": "#f0b06c",
       "children": [
         {
           "id": "pdf-tools",
           "label": "PDF 工具",
           "icon": "file-pdf",
           "module": "tools/document/pdf.js",
-          "description": "PDF 处理工具（开发中）",
+          "description": "PDF 处理工具",
           "disabled": true
         }
       ]

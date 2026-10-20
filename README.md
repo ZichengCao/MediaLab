@@ -11,9 +11,11 @@ MediaLab/
 ├── config/
 │   └── menu.json              # 菜单配置文件（核心配置）
 ├── css/
-│   └── main.css               # 全局样式
+│   ├── main.css               # 桌面端样式
+│   └── mobile.css             # 移动端样式（仅 html.ml-mobile 下生效）
 ├── js/
-│   ├── app.js                 # 应用主入口和路由管理
+│   ├── app.js                 # 全局工具函数 + 桌面端应用入口
+│   ├── mobile-app.js          # 移动端应用入口（卡片首页 + 全屏工具页）
 │   └── module-loader.js       # 模块加载器
 ├── tools/                     # 工具模块目录
 │   ├── video/
@@ -42,18 +44,22 @@ MediaLab/
       "id": "video",
       "label": "视频工具",
       "icon": "video",
+      "color": "#6c7bf0",
       "children": [
         {
           "id": "video-frame-extractor",
           "label": "帧提取工具",
           "icon": "film",
-          "module": "tools/video/frame-extractor.js"
+          "module": "tools/video/frame-extractor.js",
+          "description": "从视频中精确提取单帧画面"
         }
       ]
     }
   ]
 }
 ```
+
+分类上的 `color` 只给移动端卡片着色，桌面端忽略；工具上的 `description` 会显示在移动端卡片上，`disabled: true` 的工具桌面端不显示、移动端显示为「开发中」。
 
 ### 2. 动态模块加载
 
@@ -64,6 +70,17 @@ MediaLab/
 ### 3. 无限层级支持
 
 虽然实际使用中最多 3 级，但架构支持任意层级的菜单结构。
+
+### 4. 桌面端 / 移动端两套界面
+
+`index.html` 头部的内联脚本在首帧渲染前判定环境，满足 `(max-width: 768px)` 或「触屏 且 宽度 ≤ 1024px」时给 `<html>` 加上 `ml-mobile` 类，之后：
+
+- **桌面端**：`app.js` 的 `AppManager` 渲染侧边栏导航，样式在 `main.css`
+- **移动端**：`mobile-app.js` 隐藏桌面骨架、自建外壳——首页按分类展示工具卡片，工具以全屏页打开，页面状态记在 `location.hash`（`#/tool/<id>`），系统返回手势可直接退回首页；样式全部在 `mobile.css`，与桌面端互不影响
+
+URL 加 `?ui=mobile` 或 `?ui=desktop` 可以强制指定界面（仅对当次加载生效），方便调试。
+
+工具模块对两套界面是无感的：都往 `#content` 里挂 `.tool-page`，都走同一套 `init / destroy` 契约。如果需要区分，可读 `document.documentElement.classList.contains('ml-mobile')`。
 
 ## 添加新工具
 
@@ -156,6 +173,7 @@ MediaLab.formatTime(123.456); // "00:02:03.456"
    - 模块文件名使用小写字母和连字符
    - 工具 ID 使用小写字母和连字符
    - DOM 元素 ID 使用 `tool-{工具ID}` 格式
+6. **触屏兼容**：拖动类交互用 Pointer Events（`pointerdown / pointermove / pointerup`）而不是 mouse 事件；`<video>` 必须带 `playsinline`，否则 iPhone 上一播放就会被弹进系统全屏播放器；可点元素的触控尺寸不小于 44px
 
 ## 浏览器兼容性
 

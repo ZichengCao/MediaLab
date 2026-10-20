@@ -2,9 +2,20 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1117">
   <title>MediaLab - 媒体工具集</title>
+  <script>
+    // 首帧渲染前判定运行环境：窄屏或触屏小屏走独立的移动端界面；URL 加 ?ui=mobile|desktop 可强制指定
+    (function () {
+      var forced = new URLSearchParams(location.search).get('ui');
+      var auto = window.matchMedia('(max-width: 768px), (pointer: coarse) and (max-width: 1024px)').matches;
+      var mobile = forced === 'mobile' ? true : forced === 'desktop' ? false : auto;
+      if (mobile) document.documentElement.classList.add('ml-mobile');
+    })();
+  </script>
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
   <div id="app">
@@ -53,5 +64,6 @@
   <!-- 加载脚本 -->
   <script src="js/app.js"></script>
   <script src="js/module-loader.js"></script>
+  <script src="js/mobile-app.js"></script>
 </body>
 </html>
