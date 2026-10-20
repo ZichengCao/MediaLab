@@ -614,6 +614,67 @@ html.ml-mobile .frames-panel {
   display: none !important;
 }
 
+/* ===== 图片宽高比裁切 ===== */
+html.ml-mobile .cropper-stage {
+  flex: none;
+  height: clamp(200px, 40dvh, 380px);
+}
+
+/* 四角手柄加大，并用透明外沿扩展触控热区 */
+html.ml-mobile .crop-handle {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+html.ml-mobile .crop-handle[data-handle="nw"] { left: -9px; top: -9px; }
+html.ml-mobile .crop-handle[data-handle="ne"] { right: -9px; top: -9px; }
+html.ml-mobile .crop-handle[data-handle="sw"] { left: -9px; bottom: -9px; }
+html.ml-mobile .crop-handle[data-handle="se"] { right: -9px; bottom: -9px; }
+
+html.ml-mobile .crop-handle::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+/* 比例 chips：单行横向滑动 */
+html.ml-mobile .ratio-row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-bottom: 12px;
+}
+
+html.ml-mobile .ratio-btn {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+html.ml-mobile .ratio-btn,
+html.ml-mobile .ratio-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+html.ml-mobile .ratio-btn.active,
+html.ml-mobile .ratio-btn.active:hover {
+  background: var(--accent-bg);
+}
+
+html.ml-mobile .crop-info-bar {
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+html.ml-mobile .cropper-actions .btn {
+  flex: 1;
+  justify-content: center;
+  min-height: 48px;
+}
+
 /* ===== Toast：顶部居中，避开底部操作区 ===== */
 html.ml-mobile #toast-container {
   top: calc(var(--m-safe-top) + 12px);

@@ -21,6 +21,7 @@ MediaLab/
 │   ├── video/
 │   │   └── frame-extractor.js # 视频帧提取工具
 │   ├── image/
+│   │   ├── ratio-cropper.js    # 图片宽高比裁切工具
 │   │   └── editor.js          # 图片编辑工具（占位）
 │   ├── audio/
 │   │   └── editor.js          # 音频编辑工具（占位）
